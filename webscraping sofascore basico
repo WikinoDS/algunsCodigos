@@ -1,0 +1,28 @@
+from selenium import webdriver
+import time
+import pandas as pd
+
+driver = webdriver.Firefox()
+
+driver.get('https://www.sofascore.com/tournament/football/brazil/brasileiro-serie-a/325')
+time.sleep(15) # Aqui ta 15s pq tava demorando pra mim, mas uns 3s já dá boa, mas não importa tanto porque é so uma vez
+
+driver.find_element_by_css_selector('th.Tablestyles__StatisticHeader-sc-1i374hn-6:nth-child(6)').click() # Aqui é referente a coluna "tackles" pra ordenar por ela
+                                                                                                         # Ela é desnecessária pq vc pode configurar manualmente
+                                                                                                         # Pela pagina que será aberta da mozila
+                                                                                                         
+time.sleep(3) # Sempre bom usar time sleep entre clicks pq o javascript demora pra carregar e ai o driver acaba nao encontrando
+dados = pd.DataFrame() # Cria o dataframe que vamos guardar as tabelas
+
+for i in range(20):  # 20 é o numero de tabelas que ele vai coletar, são 20 jogador por tabela ent os 400 primeiros
+    
+    html = driver.find_element_by_css_selector('.Tablestyles__Table-sc-1i374hn-8').get_attribute('outerHTML')
+    df = pd.read_html(str(html))[0]
+
+    dados = dados.append(df, ignore_index=True)
+    driver.find_element_by_css_selector('button.Paginationstyles__Button-sc-1mupiy-0:nth-child(3)').click() # Encontra o "proximo" e muda a tabela
+    time.sleep(3)
+    
+dados.to_csv('dados.csv')   # Salva o dataframe no CSV
+
+# LEMBRANDO: Se vc quiser outros scouts ou segmentar por posicao, pode configurar manualmente a tabela e só pedir para o python iterar ela coletando
